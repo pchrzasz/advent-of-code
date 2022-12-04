@@ -1,32 +1,25 @@
-package day2
-
-import java.io.BufferedReader
-import java.io.File
-import java.io.FileReader
+package com.pchrzasz.aoc
 
 private const val PATH_TO_INPUT_FILE = "/day2/input.txt"
 
-fun main() {
-    val path = { }.javaClass.getResource(PATH_TO_INPUT_FILE)!!.path
-    val file = File(path)
-    BufferedReader(FileReader(file)).use { br ->
-        var line: String?
-        var scorePart1 = 0
-        var scorePart2 = 0
-        while (br.readLine().also { line = it } != null) {
-            val handShapes = line!!.split(" ")
-            val leftHand = AbbrevationToHand.valueOf(handShapes[0]).hand
-            val rightHand = AbbrevationToHand.valueOf(handShapes[1]).hand
-            val expectedResult = AbbrevationToResult.valueOf(handShapes[1]).result
-            scorePart1 += rightHand.score(leftHand)
-            scorePart2 += expectedResult.score(leftHand)
+class Day02 {
+
+    fun solvePart1(input: String): Int = input.lines()
+        .map { it.split(" ") }.sumOf {
+            val leftHand = AbbrevationToHand.valueOf(it[0]).hand
+            val rightHand = AbbrevationToHand.valueOf(it[1]).hand
+            rightHand.score(leftHand)
         }
-        println("Result (part1): $scorePart1")
-        println("Result (part2): $scorePart2")
-    }
+
+    fun solvePart2(input: String): Int = input.lines()
+        .map { it.split(" ") }.sumOf {
+            val leftHand = AbbrevationToHand.valueOf(it[0]).hand
+            val expectedResult = AbbrevationToResult.valueOf(it[1]).result
+            expectedResult.score(leftHand)
+        }
 }
 
-internal enum class GameResult(internal val score: Int) {
+private enum class GameResult(internal val score: Int) {
     WIN(6) {
         override fun score(hand: Hand): Int {
             val winningHand = Hand.values().first { it.beats == hand.ordinal }
@@ -48,7 +41,7 @@ internal enum class GameResult(internal val score: Int) {
     abstract fun score(hand: Hand): Int
 }
 
-internal enum class Hand(internal val score: Int, internal val beats: Int) {
+private enum class Hand(internal val score: Int, internal val beats: Int) {
     ROCK(1, 2),
     PAPER(2, 0),
     SCISSORS(3, 1);
@@ -68,7 +61,7 @@ internal enum class Hand(internal val score: Int, internal val beats: Int) {
     }
 }
 
-internal enum class AbbrevationToHand(internal val hand: Hand) {
+private enum class AbbrevationToHand(internal val hand: Hand) {
     A(Hand.ROCK),
     X(Hand.ROCK),
     B(Hand.PAPER),
@@ -77,7 +70,7 @@ internal enum class AbbrevationToHand(internal val hand: Hand) {
     Z(Hand.SCISSORS);
 }
 
-internal enum class AbbrevationToResult(internal val result: GameResult) {
+private enum class AbbrevationToResult(internal val result: GameResult) {
     X(GameResult.LOSE),
     Y(GameResult.DRAW),
     Z(GameResult.WIN);
