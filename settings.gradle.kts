@@ -1,3 +1,2 @@
-
-rootProject.name = "advent-of-code-2022"
-
+rootProject.name = "advent-of-code"
+include("aoc-2022", "aoc-2023")

@@ -8,15 +8,21 @@ plugins {
 group = "org.example"
 version = "1.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
+allprojects {
+    repositories {
+        mavenCentral()
+    }
 }
 
-dependencies {
-    testImplementation(kotlin("test"))
+subprojects {
+    apply(plugin = "kotlin")
+    kotlin {}
+    dependencies {
+        testImplementation(kotlin("test"))
 
-    testImplementation("org.assertj:assertj-core:3.23.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.1")
+        testImplementation("org.assertj:assertj-core:3.23.1")
+        testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.0")
+    }
 }
 
 tasks.test {
@@ -25,8 +31,4 @@ tasks.test {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "17"
-}
-
-application {
-    mainClass.set("MainKt")
 }
