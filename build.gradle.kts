@@ -18,6 +18,8 @@ subprojects {
     apply(plugin = "kotlin")
     kotlin {}
     dependencies {
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
         testImplementation(kotlin("test"))
 
         testImplementation("org.assertj:assertj-core:3.23.1")
