@@ -119,7 +119,7 @@ class Day05Test {
             val inputAsText = Resources.resourceAsText("input_day05.txt")
             val answer = Day05().solvePart2(inputAsText.lines())
 
-            Assertions.assertThat(answer).isEqualTo(12_574_245L)
+            Assertions.assertThat(answer).isEqualTo(125_742_456L)
         }
     }
 

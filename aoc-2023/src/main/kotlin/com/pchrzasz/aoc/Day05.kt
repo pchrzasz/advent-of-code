@@ -1,73 +1,57 @@
 package com.pchrzasz.aoc
 
-import kotlinx.coroutines.*
-
 /**
  * @author Paweł Chrząszczewski
  */
 class Day05 {
 
-    fun solvePart1(lines: List<String>): Long = runBlocking { solution(listOf(seeds(lines[0]).asSequence()), lines) }
+    fun solvePart1(lines: List<String>): Long = solution1(seeds(lines[0]), parseMaps(lines))
 
-    // super dummy
-    fun solvePart2(lines: List<String>): Long = runBlocking {
-        solution(
+    fun solvePart2(lines: List<String>): Long =
+        solution2(
             seeds(lines[0])
                 .chunked(2)
                 .map {
                     (it[0] until it[0] + it[1])
-                        .asSequence()
                 },
-            lines
+            parseMaps(lines).reversed().map { it.map { it.second to it.first } }
         )
-    }
 
 
     private fun seeds(row: String): List<Long> = row.substringAfter(":").trim().split(" ").map { it.toLong() }
-    private suspend fun solution(seeds: List<Sequence<Long>>, lines: List<String>): Long {
-        val mappings = listOf(
-            Type.SEED to Type.SOIL,
-            Type.SOIL to Type.FERTILIZER,
-            Type.FERTILIZER to Type.WATER,
-            Type.WATER to Type.LIGHT,
-            Type.LIGHT to Type.TEMPERATURE,
-            Type.TEMPERATURE to Type.HUMIDITY,
-            Type.HUMIDITY to Type.LOCATION
-        )
-        var current: Pair<Type, Type>? = null
-        val maps =
-            lines.filter { it.isNotBlank() }
-                .drop(1)
-                .fold(mutableMapOf<Type, Map<Type, MutableList<Pair<LongRange, LongRange>>>>()) { seedsInformation, line ->
-                    val mapTypes = getMapTypes(line)
-                    current = mapTypes ?: current
-                    if (mapTypes != null) {
-                        seedsInformation[mapTypes.first] = mutableMapOf(mapTypes.second to mutableListOf())
-                    } else {
-                        val nums = line.split(" ").map { it.toLong() }
-                        val fromTo = Pair((nums[1] until nums[1] + nums[2]), (nums[0] until nums[0] + nums[2]))
-                        seedsInformation[current?.first]?.get(current?.second)?.add(fromTo)
-                    }
-                    seedsInformation
+
+    private fun parseMaps(lines: List<String>) =
+        lines
+            .filter { it.isNotBlank() }
+            .drop(1)
+            .fold(mutableListOf<MutableList<Pair<LongRange, LongRange>>>()) { seedsInformation, line ->
+                if (getMapTypes(line) != null) {
+                    seedsInformation.add(mutableListOf())
+                } else {
+                    val nums = line.split(" ").map { it.toLong() }
+                    val fromTo = Pair((nums[1] until nums[1] + nums[2]), (nums[0] until nums[0] + nums[2]))
+                    seedsInformation.last().add(fromTo)
                 }
-        return coroutineScope {
-            seeds.map {
-                async(Dispatchers.Default) {
-                    println("Dupax: $it")
-                    it.minOf { seed ->
-                        mappings.fold(seed) { acc, pair ->
-                            maps[pair.first]?.get(pair.second)?.firstOrNull { acc in it.first }.let {
-                                if (it != null) it.second.first + (acc - it.first.first)
-                                else acc
-                            }
-                        }
-                    }.let {
-                        it
-                    }
-                }
-            }.toList().awaitAll().min()
+                seedsInformation
+            }
+
+
+    private fun solution1(seeds: List<Long>, maps: List<List<Pair<LongRange, LongRange>>>): Long =
+        seeds.minOf { seed ->
+            maps.fold(seed) { acc, pair ->
+                pair.firstOrNull { acc in it.first }
+                    .let { if (it != null) it.second.first + (acc - it.first.first) else acc }
+            }
         }
-    }
+
+    private fun solution2(seeds: List<LongRange>, maps: List<List<Pair<LongRange, LongRange>>>): Long =
+        generateSequence(0L, Long::inc).first {
+            val seed = maps.fold(it) { acc, pair ->
+                pair.firstOrNull { acc in it.first }
+                    .let { if (it != null) it.second.first + (acc - it.first.first) else acc }
+            }
+            seeds.any { seed in it }
+        }
 
 
     private fun getMapTypes(line: String): Pair<Type, Type>? {
